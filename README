@@ -1,0 +1,2 @@
+This package contains a set of browser backends to support Mono.WebBrowser. They are privately GAC'd assemblies
+used by Mono.WebBrowser directly, and are not meant to be linked to directly (hence no .pc files)

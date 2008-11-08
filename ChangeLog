@@ -1,0 +1,10 @@
+2008-11-08  Andreia Gaita <shana@jitted.com> 
+
+	* mono-webbrowser is a support module containing browser
+	  backends for Mono.WebBrowser. It currently includes a WebKit backend and
+	  will in the future also include the existing Gecko backend (the
+	  Mono.Mozilla namespace that currently resides on Mono.WebBrowser). This
+	  code can't be in Mono.WebBrowser directly because the webkit backend
+	  uses webkit-sharp and gtk, and 1) those libraries are not yet available
+	  when Mono.WebBrowser is getting built and 2) this avoids adding hard
+	  dependencies on winforms.
