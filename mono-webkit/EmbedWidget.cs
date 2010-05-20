@@ -118,7 +118,7 @@ namespace Mono.WebKit
 			base.OnUnrealized ();
 			
 		}
-
+/*
 		protected override void OnSizeAllocated (Rectangle allocation)
 		{
 			DebugHelper.DumpCallers ();
@@ -131,7 +131,7 @@ namespace Mono.WebKit
 			}
 			base.OnSizeAllocated (allocation);
 		}
-
+*/
 		protected override void OnAdded (Widget webview)
 		{
 			this.webview = webview;

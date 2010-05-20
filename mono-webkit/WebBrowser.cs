@@ -187,7 +187,7 @@ namespace Mono.WebKit
 			DebugHelper.WriteLine ("Resizing to " + widget.Allocation.X + " " + widget.Allocation.Y + " " + width + " " + height);
 			
 			Gdk.Threads.Enter ();
-			widget.SizeAllocate (new Gdk.Rectangle (widget.Allocation.X, widget.Allocation.Y, width, height));
+			widget.Resize (width, height);
 			Gdk.Threads.Leave ();
 		}
 		public void Render (byte[] data)
@@ -223,6 +223,11 @@ namespace Mono.WebKit
 			set { }
 		}
 
+		public void ExecuteScript (string s)
+		{
+			webview.ExecuteScript (s);
+		}
+
 		
 		#region Events
 		public event NodeEventHandler KeyDown;
@@ -248,6 +253,7 @@ namespace Mono.WebKit
 		public event LoadFinishedEventHandler LoadFinished;
 		public event SecurityChangedEventHandler SecurityChanged;
 		public event ContextMenuEventHandler ContextMenuShown;		
+		public event NavigationRequestedEventHandler NavigationRequested;
 
 		void OnKeyDown () {
 			if (KeyDown != null) {

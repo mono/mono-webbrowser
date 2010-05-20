@@ -1,3 +1,11 @@
+2010-05-21  Andreia Gaita <shana@jitted.com>
+
+	* EmbedWidget.cs: remove OnSizeAllocated, redundant and potential
+	  source of endless loops
+	* WebBrowser.cs: Add NavigationRequested and ExecuteScript to
+	  conform to the new API. Do widget.Resize instead of SizeAllocate,
+	  works better.
+
 2008-11-08  Andreia Gaita <shana@jitted.com> 
 
 	* mono-webkit: mono-webkit is the WebKit backend for Mono.WebBrowser.
