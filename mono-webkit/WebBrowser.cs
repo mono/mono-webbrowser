@@ -169,6 +169,7 @@ namespace Mono.WebKit
 		
 		public void Shutdown ()
 		{
+			Dispose ();
 		}
 		public void FocusIn (FocusOption focus)
 		{
