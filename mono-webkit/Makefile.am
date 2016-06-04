@@ -16,7 +16,7 @@ mono-webkit.dll: $(mono_webkit_build_sources)
 
 EXTRA_DIST = mono-webkit.snk
  
-CLEANFILES = *.dll *.mdb
+CLEANFILES = mono-webkit.dll mono-webkit.dll.mdb
 
 DISTCLEANFILES = *.pidb $mono_webkit_sources_in
 
