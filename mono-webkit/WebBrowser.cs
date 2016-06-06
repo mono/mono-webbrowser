@@ -109,11 +109,11 @@ namespace Mono.WebKit
 			lock (widgetLock) {
 				if (!started) {
 					Gtk.Application.Init ();
-			System.Windows.Forms.Application.Idle += delegate (object sender, EventArgs e) {
-				while (Gtk.Application.EventsPending()) {
-					Gtk.Application.RunIteration(false);
-				}
-			};
+					System.Windows.Forms.Application.Idle += delegate (object sender, EventArgs e) {
+						while (Gtk.Application.EventsPending()) {
+							Gtk.Application.RunIteration(false);
+						}
+					};
 					started = true;
 				}
 			}
