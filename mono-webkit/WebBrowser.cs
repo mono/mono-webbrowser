@@ -18,9 +18,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 // Copyright (c) 2008 Novell, Inc.
+// Copyright (c) 2016 Hin-Tak Leung
 //
 // Authors:
 //	Andreia Gaita (shana@jitted.com)
+//	Hin-Tak Leung (htl10@users.sourceforge.net)
 //
 
 
@@ -29,6 +31,7 @@ using System.ComponentModel;
 using Mono.WebBrowser;
 using Mono.WebBrowser.DOM;
 using webkit=WebKit;
+using System.Windows.Forms;
 
 namespace Mono.WebKit
 {
@@ -41,10 +44,6 @@ namespace Mono.WebKit
 		internal EmbedWidget widget;
 		private bool disposed = false;
 		private bool initialized = false;
-		private static bool started = false;
-		private static object initLock = new object ();
-		private static int widgetCount = 0;
-		private static object widgetLock = new object ();
 		
 		public WebBrowser()
 		{
@@ -60,14 +59,7 @@ namespace Mono.WebKit
 		{
 			if (!disposed) {
 				if (disposing) {
-					lock (widgetLock) {
-						widgetCount--;
-						if (widgetCount == 0) {							
-							Gdk.Threads.Enter ();
-							Gtk.Application.Quit ();
-							Gdk.Threads.Leave ();
-						}
-					}
+					Gtk.Application.Quit ();
 				}
 				disposed = true;
 			}
@@ -105,35 +97,16 @@ namespace Mono.WebKit
 			this.width = width;
 			this.height = height;
 			
-			System.Threading.ThreadStart start = delegate () {				
-				lock (widgetLock) {
-					if (!GLib.Thread.Supported)
-						GLib.Thread.Init ();
-					Gdk.Threads.Init ();
-					Gtk.Application.Init ();
-					started = true;
-				}
-				Gtk.Application.Run ();
-			};
+			Gtk.Application.Init ();
 			
-			lock (initLock) {
-				if (!started) {
-					System.Threading.Thread t = new System.Threading.Thread (start);
-					t.Start ();
-				}
-			}
+			InitializeWindow (null, null);
 
-			while (!initialized) {
-				lock (widgetLock) {
-					if (!started)
-						continue;
-					Gdk.Threads.Enter ();
-					InitializeWindow (null, null);
-					Gdk.Threads.Leave ();
-					widgetCount++;
+			System.Windows.Forms.Application.Idle += delegate (object sender, EventArgs e) {
+				while (Gtk.Application.EventsPending()) {
+					Gtk.Application.RunIteration(false);
 				}
-			}
-//			Gdk.Window.DebugUpdates  = true;
+			};
+
 			return true;
 		}
 		
@@ -186,10 +159,7 @@ namespace Mono.WebKit
 		public void Resize (int width, int height)
 		{
 			DebugHelper.WriteLine ("Resizing to " + widget.Allocation.X + " " + widget.Allocation.Y + " " + width + " " + height);
-			
-			Gdk.Threads.Enter ();
 			widget.Resize (width, height);
-			Gdk.Threads.Leave ();
 		}
 		public void Render (byte[] data)
 		{
@@ -388,17 +358,13 @@ namespace Mono.WebKit
 		
 		public bool Back () {
 			if (!CanGoBack) return false;
-			Gdk.Threads.Enter ();
 			webview.GoBack ();
-			Gdk.Threads.Leave ();
 			return true;
 		}
 		
 		public bool Forward () {
 			if (!CanGoForward) return false;
-			Gdk.Threads.Enter ();
 			webview.GoForward ();
-			Gdk.Threads.Leave ();
 			return true;
 		}
 		
@@ -409,9 +375,7 @@ namespace Mono.WebKit
 			DebugHelper.DumpCallers ();
 			DebugHelper.WriteLine ("Reloading...");
 
-			Gdk.Threads.Enter ();
 			webview.Reload ();
-			Gdk.Threads.Leave ();
 		}
 		
 		// TODO: see if it's possible to reload from cache
@@ -419,15 +383,11 @@ namespace Mono.WebKit
 			DebugHelper.DumpCallers ();
 			DebugHelper.WriteLine ("Reloading...");
 
-			Gdk.Threads.Enter ();
 			webview.Reload ();
-			Gdk.Threads.Leave ();
 		}
 		
 		public void Stop () {
-			Gdk.Threads.Enter ();
 			webview.StopLoading ();
-			Gdk.Threads.Leave ();
 		}
 
 		/// <summary>
@@ -448,9 +408,7 @@ namespace Mono.WebKit
 				return;
 			}
 			webkit.WebHistoryItem item = history.GetNthItem (index);
-			Gdk.Threads.Enter ();
 			webview.GoToBackForwardItem (item);
-			Gdk.Threads.Leave ();
 		}
 		
 		/// <summary>
@@ -474,9 +432,7 @@ namespace Mono.WebKit
 				if (!webview.CanGoBackOrForward (index)) {
 					return;
 				}
-				Gdk.Threads.Enter ();
 				webview.GoBackOrForward (index);
-				Gdk.Threads.Leave ();
 			}	
 		}
 		
@@ -489,9 +445,7 @@ namespace Mono.WebKit
 		/// A <see cref="System.String"/> representing an Url
 		/// </param>		
 		public void Go (string url) {
-			Gdk.Threads.Enter ();
 			webview.Open (url);
-			Gdk.Threads.Leave ();
 		}
 		
 		/// <summary>
@@ -504,9 +458,7 @@ namespace Mono.WebKit
 		/// A <see cref="LoadFlags"/> that control if the page comes from cache or not.
 		/// </param>
 		public void Go (string url, LoadFlags flags) {
-			Gdk.Threads.Enter ();
 			webview.Open (url);
-			Gdk.Threads.Leave ();
 		}
 
 		public int HistoryCount { 
