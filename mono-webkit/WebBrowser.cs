@@ -44,6 +44,10 @@ namespace Mono.WebKit
 		internal EmbedWidget widget;
 		private bool disposed = false;
 		private bool initialized = false;
+		private static bool started = false;
+		private static object initLock = new object ();
+		private static int widgetCount = 0;
+		private static object widgetLock = new object ();
 		
 		public WebBrowser()
 		{
@@ -59,7 +63,12 @@ namespace Mono.WebKit
 		{
 			if (!disposed) {
 				if (disposing) {
-					Gtk.Application.Quit ();
+					lock (widgetLock) {
+						widgetCount--;
+						if (widgetCount == 0) {
+							Gtk.Application.Quit ();
+						}
+					}
 				}
 				disposed = true;
 			}
@@ -97,15 +106,26 @@ namespace Mono.WebKit
 			this.width = width;
 			this.height = height;
 			
-			Gtk.Application.Init ();
-			
-			InitializeWindow (null, null);
-
+			lock (widgetLock) {
+				if (!started) {
+					Gtk.Application.Init ();
 			System.Windows.Forms.Application.Idle += delegate (object sender, EventArgs e) {
 				while (Gtk.Application.EventsPending()) {
 					Gtk.Application.RunIteration(false);
 				}
 			};
+					started = true;
+				}
+			}
+
+			while (!initialized) {
+				lock (widgetLock) {
+					if (!started)
+						continue;
+					InitializeWindow (null, null);
+					widgetCount++;
+				}
+			}
 
 			return true;
 		}
