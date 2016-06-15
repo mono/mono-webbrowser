@@ -45,7 +45,6 @@ namespace Mono.WebKit
 		private bool disposed = false;
 		private bool initialized = false;
 		private static bool started = false;
-		private static object initLock = new object ();
 		private static int widgetCount = 0;
 		private static object widgetLock = new object ();
 
