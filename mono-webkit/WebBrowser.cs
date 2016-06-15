@@ -5,10 +5,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -18,9 +18,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 // Copyright (c) 2008 Novell, Inc.
+// Copyright (c) 2016 Hin-Tak Leung
 //
 // Authors:
 //	Andreia Gaita (shana@jitted.com)
+//	Hin-Tak Leung (htl10@users.sourceforge.net)
 //
 
 
@@ -29,6 +31,7 @@ using System.ComponentModel;
 using Mono.WebBrowser;
 using Mono.WebBrowser.DOM;
 using webkit=WebKit;
+using System.Windows.Forms;
 
 namespace Mono.WebKit
 {
@@ -36,24 +39,23 @@ namespace Mono.WebKit
 	{
 		private IntPtr handle;
 		private int width, height;
-		
+
 		internal webkit.WebView webview;
 		internal EmbedWidget widget;
 		private bool disposed = false;
 		private bool initialized = false;
 		private static bool started = false;
-		private static object initLock = new object ();
 		private static int widgetCount = 0;
 		private static object widgetLock = new object ();
-		
+
 		public WebBrowser()
 		{
 		}
-		
+
 		~WebBrowser () {
 			Dispose (false);
 		}
-		
+
 		#region IDisposable Members
 
 		private void Dispose (bool disposing)
@@ -62,10 +64,8 @@ namespace Mono.WebKit
 				if (disposing) {
 					lock (widgetLock) {
 						widgetCount--;
-						if (widgetCount == 0) {							
-							Gdk.Threads.Enter ();
+						if (widgetCount == 0) {
 							Gtk.Application.Quit ();
-							Gdk.Threads.Leave ();
 						}
 					}
 				}
@@ -82,12 +82,12 @@ namespace Mono.WebKit
 		#endregion
 
 		#region IWebBrowser
-		
+
 		/// <summary>
 		/// Initialize a browser instance.
 		/// </summary>
 		/// <param name="handle">
-		/// A <see cref="IntPtr"/> to the native window handle of the widget 
+		/// A <see cref="IntPtr"/> to the native window handle of the widget
 		/// where the browser engine will draw
 		/// </param>
 		/// <param name="width">
@@ -104,22 +104,16 @@ namespace Mono.WebKit
 			this.handle = handle;
 			this.width = width;
 			this.height = height;
-			
-			System.Threading.ThreadStart start = delegate () {				
-				lock (widgetLock) {
-					if (!GLib.Thread.Supported)
-						GLib.Thread.Init ();
-					Gdk.Threads.Init ();
-					Gtk.Application.Init ();
-					started = true;
-				}
-				Gtk.Application.Run ();
-			};
-			
-			lock (initLock) {
+
+			lock (widgetLock) {
 				if (!started) {
-					System.Threading.Thread t = new System.Threading.Thread (start);
-					t.Start ();
+					Gtk.Application.Init ();
+					System.Windows.Forms.Application.Idle += delegate (object sender, EventArgs e) {
+						while (Gtk.Application.EventsPending()) {
+							Gtk.Application.RunIteration(false);
+						}
+					};
+					started = true;
 				}
 			}
 
@@ -127,16 +121,14 @@ namespace Mono.WebKit
 				lock (widgetLock) {
 					if (!started)
 						continue;
-					Gdk.Threads.Enter ();
 					InitializeWindow (null, null);
-					Gdk.Threads.Leave ();
 					widgetCount++;
 				}
 			}
-//			Gdk.Window.DebugUpdates  = true;
+
 			return true;
 		}
-		
+
 		void InitializeWindow (object _sender, EventArgs ev) {
 			Gtk.Adjustment h = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
 			Gtk.Adjustment v = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
@@ -145,7 +137,7 @@ namespace Mono.WebKit
 			};
 			v.ValueChanged += delegate (object sender, EventArgs e) {
 				DebugHelper.WriteLine ("vertical scroll ValueChanged " + v.Value);
-			};	
+			};
 
 			widget = new EmbedWidget(handle, h, v);
 			widget.Unrealized += delegate {
@@ -154,21 +146,22 @@ namespace Mono.WebKit
 
 			widget.Init ();
 			webview = new webkit.WebView();
-			
+
 			webview.LoadCommitted += delegate (object o, webkit.LoadCommittedArgs args) {
 			};
 			webview.LoadProgressChanged += delegate (object o, webkit.LoadProgressChangedArgs args) {
 			};
-			
+
 			webview.SetScrollAdjustments (h, v);
 			widget.Add (webview);
 			widget.ShowAll ();
 			initialized = true;
 		}
-		
-		
+
+
 		public void Shutdown ()
 		{
+			Dispose ();
 		}
 		public void FocusIn (FocusOption focus)
 		{
@@ -185,10 +178,7 @@ namespace Mono.WebKit
 		public void Resize (int width, int height)
 		{
 			DebugHelper.WriteLine ("Resizing to " + widget.Allocation.X + " " + widget.Allocation.Y + " " + width + " " + height);
-			
-			Gdk.Threads.Enter ();
 			widget.Resize (width, height);
-			Gdk.Threads.Leave ();
 		}
 		public void Render (byte[] data)
 		{
@@ -199,25 +189,25 @@ namespace Mono.WebKit
 		public void Render (string html, string uri, string contentType)
 		{
 		}
-		
-		public bool Initialized { 
+
+		public bool Initialized {
 			get { return initialized; }
 		}
-		
-		public IWindow Window { 
+
+		public IWindow Window {
 			get { return null; }
 		}
-		
-		public IDocument Document { 
+
+		public IDocument Document {
 			get { return null; }
 		}
-		
-		public INavigation Navigation { 
-			get { 
+
+		public INavigation Navigation {
+			get {
 				return this;
 			}
 		}
-		
+
 		public bool Offline {
 			get { return false; }
 			set { }
@@ -228,7 +218,7 @@ namespace Mono.WebKit
 			webview.ExecuteScript (s);
 		}
 
-		
+
 		#region Events
 		public event NodeEventHandler KeyDown;
 		public event NodeEventHandler KeyPress;
@@ -252,7 +242,7 @@ namespace Mono.WebKit
 		public event Mono.WebBrowser.ProgressChangedEventHandler ProgressChanged;
 		public event LoadFinishedEventHandler LoadFinished;
 		public event SecurityChangedEventHandler SecurityChanged;
-		public event ContextMenuEventHandler ContextMenuShown;		
+		public event ContextMenuEventHandler ContextMenuShown;
 		public event NavigationRequestedEventHandler NavigationRequested;
 
 		void OnKeyDown () {
@@ -260,7 +250,7 @@ namespace Mono.WebKit
 				KeyDown (this, new NodeEventArgs (null));
 			}
 		}
-		
+
 		void OnKeyPress () {
 			if (KeyPress != null) {
 				KeyPress (this, new NodeEventArgs (null));
@@ -371,96 +361,84 @@ namespace Mono.WebKit
 				ContextMenuShown (this, new ContextMenuEventArgs (0, 0));
 			}
 		}
-		
-		#endregion
-		
+
 		#endregion
 
-		#region INavigation		
-		public bool CanGoBack { 
+		#endregion
+
+		#region INavigation
+		public bool CanGoBack {
 			get { return webview.CanGoBack ();}
 		}
-		
-		public bool CanGoForward  { 
+
+		public bool CanGoForward  {
 			get { return webview.CanGoForward ();}
 		}
-		
+
 		public bool Back () {
 			if (!CanGoBack) return false;
-			Gdk.Threads.Enter ();
 			webview.GoBack ();
-			Gdk.Threads.Leave ();
 			return true;
 		}
-		
+
 		public bool Forward () {
 			if (!CanGoForward) return false;
-			Gdk.Threads.Enter ();
 			webview.GoForward ();
-			Gdk.Threads.Leave ();
 			return true;
 		}
-		
+
 		public void Home () {
 		}
-		
+
 		public void Reload () {
 			DebugHelper.DumpCallers ();
 			DebugHelper.WriteLine ("Reloading...");
 
-			Gdk.Threads.Enter ();
 			webview.Reload ();
-			Gdk.Threads.Leave ();
 		}
-		
+
 		// TODO: see if it's possible to reload from cache
 		public void Reload (ReloadOption option) {
 			DebugHelper.DumpCallers ();
 			DebugHelper.WriteLine ("Reloading...");
 
-			Gdk.Threads.Enter ();
 			webview.Reload ();
-			Gdk.Threads.Leave ();
 		}
-		
+
 		public void Stop () {
-			Gdk.Threads.Enter ();
 			webview.StopLoading ();
-			Gdk.Threads.Leave ();
 		}
 
 		/// <summary>
 		/// Navigate to the page in the history, by index.
 		/// </summary>
 		/// <param name="index">
-		/// A <see cref="System.Int32"/> representing an absolute index in the 
+		/// A <see cref="System.Int32"/> representing an absolute index in the
 		/// history (that is, > -1 and < history length
 		/// </param>
 		public void Go (int index) {
 			if (index < 0)
 				return;
-			
-			
+
+
 			webkit.WebBackForwardList history = webview.BackForwardList;
 			int len = history.ForwardLength + history.BackLength + 1;
 			if (index > len) {
 				return;
 			}
 			webkit.WebHistoryItem item = history.GetNthItem (index);
-			Gdk.Threads.Enter ();
 			webview.GoToBackForwardItem (item);
-			Gdk.Threads.Leave ();
 		}
-		
+
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="index">
-		/// A <see cref="System.Int32"/> representing an index in the 
+		/// A <see cref="System.Int32"/> representing an index in the
 		/// history, that can be relative or absolute depending on the relative argument
 		/// </param>
 		/// <param name="relative">
-		/// A <see cref="System.Boolean"/> indicating whether the index is relative to 
+		/// A <see cref="System.Boolean"/> indicating whether the index is relative to
 		/// the current place in history or not (i.e., if relative = true, index can be
 		/// positive or negative, and index=-1 means load the previous page in the history.
 		/// if relative = false, index must be > -1, and index = 0 means load the first
@@ -469,16 +447,14 @@ namespace Mono.WebKit
 		public void Go (int index, bool relative) {
 			if (!relative)
 				Go (index);
-			else {				
+			else {
 				if (!webview.CanGoBackOrForward (index)) {
 					return;
 				}
-				Gdk.Threads.Enter ();
 				webview.GoBackOrForward (index);
-				Gdk.Threads.Leave ();
-			}	
+			}
 		}
-		
+
 
 		/// <summary>
 		/// Navigate to an Url. Uses default loading flags, so the page might come
@@ -486,15 +462,13 @@ namespace Mono.WebKit
 		/// </summary>
 		/// <param name="url">
 		/// A <see cref="System.String"/> representing an Url
-		/// </param>		
+		/// </param>
 		public void Go (string url) {
-			Gdk.Threads.Enter ();
 			webview.Open (url);
-			Gdk.Threads.Leave ();
 		}
-		
+
 		/// <summary>
-		/// 
+		///
 		/// </summary>
 		/// <param name="url">
 		/// A <see cref="System.String"/> representing an Url.
@@ -503,18 +477,16 @@ namespace Mono.WebKit
 		/// A <see cref="LoadFlags"/> that control if the page comes from cache or not.
 		/// </param>
 		public void Go (string url, LoadFlags flags) {
-			Gdk.Threads.Enter ();
 			webview.Open (url);
-			Gdk.Threads.Leave ();
 		}
 
-		public int HistoryCount { 
-			get { 
+		public int HistoryCount {
+			get {
 				webkit.WebBackForwardList history = webview.BackForwardList;
 				return history.ForwardLength + history.BackLength + 1;
 			}
 		}
-		#endregion		
-		
+		#endregion
+
 	}
 }

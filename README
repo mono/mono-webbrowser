@@ -1,2 +1,17 @@
 This package contains a set of browser backends to support Mono.WebBrowser. They are privately GAC'd assemblies
 used by Mono.WebBrowser directly, and are not meant to be linked to directly (hence no .pc files)
+
+To build from git:
+
+        ./autogen.sh
+        ./configure
+        make
+
+This also build a simple test app in tests/simple/ . You can run it with mono after first setting the environment
+variable:
+
+MONO_BROWSER_ENGINE=webkit
+
+and copy "mono-webkit.dll" from mono-webkit/ into tests/simple/ . It is a not well-documented quirk that Mono's
+implementation of System.Windows.Forms.Browsers looks for a suitably written "mono-webkit.dll" in the assembly
+load path if MONO_BROWSER_ENGINE=webkit is set. Read the source.

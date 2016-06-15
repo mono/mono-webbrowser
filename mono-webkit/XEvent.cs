@@ -5,10 +5,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,7 +28,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace Mono.WebKit
-{	
+{
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct XAnyEvent {
 		internal XEventName	type;
@@ -603,7 +603,7 @@ namespace Mono.WebKit
 					return type.ToString ();
 			}
 		}
-		
+
 		public static string ToString (object ev)
 		{
 			string result = string.Empty;
@@ -622,7 +622,7 @@ namespace Mono.WebKit
 			return type.Name + " (" + result + ")";
 		}
 	}
-	
+
 	internal enum XEventName {
 		KeyPress                = 2,
 		KeyRelease              = 3,
@@ -677,7 +677,7 @@ namespace Mono.WebKit
 		NotifyPointerRoot	= 6,
 		NotifyDetailNone	= 7
 	}
-	
+
 	internal enum XRequest : byte {
 		X_CreateWindow			= 1,
 		X_ChangeWindowAttributes	= 2,
@@ -800,7 +800,7 @@ namespace Mono.WebKit
 		X_GetModifierMapping		= 119,
 		X_NoOperation			= 127
 	}
-	
+
 	[Flags]
 	internal enum EventMask {
 		NoEventMask		= 0,
@@ -830,10 +830,10 @@ namespace Mono.WebKit
 		ColormapChangeMask	= 1<<23,
 		OwnerGrabButtonMask	= 1<<24
 	}
-	
+
 	[Flags]
 	internal enum GdkEventMask {
-		ExposureMask = EventMask.ExposureMask, 
+		ExposureMask = EventMask.ExposureMask,
   		PointerMotionMask = EventMask.PointerMotionMask,
 		PointerMotionHintMask = EventMask.PointerMotionHintMask,
 		ButtonMotionMask = EventMask.ButtonMotionMask,

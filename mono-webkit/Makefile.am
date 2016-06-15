@@ -12,11 +12,11 @@ mono_webkit_build_sources = $(addprefix $(srcdir)/, $(DIST_SOURCES))
 mono_webkit_build_sources += $(mono_webkit_generated_sources)
 
 mono-webkit.dll: $(mono_webkit_build_sources)
-	$(MCS) -debug -define:DEBUG -target:library -out:$@ $(WEBKIT_REFERENCES) $(GTKSHARP_LIBS) $(WEBKITSHARP_LIBS) $(mono_webkit_build_sources)
+	$(MCS) -debug -define:DEBUG -target:library -out:$@ -r:System.Windows.Forms $(WEBKIT_REFERENCES) $(GTKSHARP_LIBS) $(WEBKITSHARP_LIBS) $(mono_webkit_build_sources)
 
 EXTRA_DIST = mono-webkit.snk
  
-CLEANFILES = *.dll *.mdb
+CLEANFILES = mono-webkit.dll mono-webkit.dll.mdb
 
 DISTCLEANFILES = *.pidb $mono_webkit_sources_in
 

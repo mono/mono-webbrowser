@@ -13,12 +13,12 @@ namespace tests.simple {
 		public browser () {
 			webbrowser = new WebBrowser ();
 			webbrowser.Dock = DockStyle.Fill;
-			
+
 			this.Controls.Add (webbrowser);
 			webbrowser.Navigate ("http://www.google.com");
-			
+
 		}
 	}
-	
-	
+
+
 }

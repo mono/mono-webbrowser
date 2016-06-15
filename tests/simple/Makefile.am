@@ -10,7 +10,7 @@ simple_build_sources += $(simple_generated_sources)
 browser.exe: $(simple_build_sources)
 	$(MCS) -debug -target:winexe -out:$@ -pkg:dotnet $(simple_build_sources)
 
-CLEANFILES = *.exe *.mdb
+CLEANFILES = browser.exe browser.exe.mdb
 
 DISTCLEANFILES = *.pidb $simple_sources_in
 
