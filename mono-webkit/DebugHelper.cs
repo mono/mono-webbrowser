@@ -5,10 +5,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -44,7 +44,7 @@ namespace Mono.WebKit
 		static DebugHelper () {
 			Debug.AutoFlush = true;
 		}
-		
+
 		struct Data {
 			public MethodBase method;
 			public object[] args;
@@ -53,7 +53,7 @@ namespace Mono.WebKit
 				this.args = a;
 			}
 		}
-#if NET_2_0		
+#if NET_2_0
 		static Stack<Data> methods = new Stack<Data>();
 #else
 		class DataStack : System.Collections.Stack {
@@ -69,7 +69,7 @@ namespace Mono.WebKit
 		}
 		static DataStack methods = new DataStack();
 #endif
-		
+
 		[Conditional("DEBUG")]
 		internal static void DumpCallers () {
             StackTrace trace = new StackTrace(true);
@@ -81,11 +81,11 @@ namespace Mono.WebKit
 				string file = parentFrame.GetFileName();
 				if (file != null && file.Length > 1)
 					file = file.Substring (file.LastIndexOf (Path.DirectorySeparatorChar) + 1);
-				Debug.WriteLine(parentMethod.DeclaringType.Name + "." + parentMethod.Name + 
+				Debug.WriteLine(parentMethod.DeclaringType.Name + "." + parentMethod.Name +
 				              " at " + file + ":" + parentFrame.GetFileLineNumber()
-				              );				
+				              );
 			}
-			
+
 			Debug.Unindent ();
 		}
 
@@ -100,11 +100,11 @@ namespace Mono.WebKit
 				string file = parentFrame.GetFileName();
 				if (file != null && file.Length > 1)
 					file = file.Substring (file.LastIndexOf (Path.DirectorySeparatorChar) + 1);
-				Debug.WriteLine(parentMethod.DeclaringType.Name + "." + parentMethod.Name + 
+				Debug.WriteLine(parentMethod.DeclaringType.Name + "." + parentMethod.Name +
 				              " at " + file + ":" + parentFrame.GetFileLineNumber()
-				              );				
+				              );
 			}
-			
+
 			Debug.Unindent ();
 		}
 
@@ -118,7 +118,7 @@ namespace Mono.WebKit
 		}
 
 		[Conditional("DEBUG")]
-		internal static void Enter (object[] args) 
+		internal static void Enter (object[] args)
 		{
 			StackTrace trace = new StackTrace();
 			methods.Push (new Data (trace.GetFrame(1).GetMethod(), args));
@@ -130,14 +130,14 @@ namespace Mono.WebKit
 		internal static void Leave ()
 		{
 			if (methods.Count > 0) {
-								
+
 				Debug.Unindent ();
 				Debug.WriteLine ("Leaving " + Current);
 				methods.Pop ();
 			}
 		}
 
-		
+
 		static string Current
 		{
 			get {
@@ -178,11 +178,11 @@ namespace Mono.WebKit
 		}
 
 		[Conditional("DEBUG")]
-		internal static void Print (string methodName, string parameterName) 
+		internal static void Print (string methodName, string parameterName)
 		{
 			if (methods.Count == 0)
 				return;
-			
+
 #if NET_2_0
 			Stack<Data> temp = new Stack<Data>();
 #else
@@ -220,7 +220,7 @@ namespace Mono.WebKit
 						Debug.WriteLine (data.args[i]);
 					Debug.Unindent ();
 				}
-			}			
+			}
 		}
 
 		[Conditional("DEBUG")]
@@ -229,7 +229,7 @@ namespace Mono.WebKit
 			if (methods.Count == 0)
 				return;
 			Data data = methods.Peek ();
-			
+
 			ParameterInfo[] pi = data.method.GetParameters ();
 
 			for (int i = 0; i < pi.Length; i++) {
@@ -242,7 +242,7 @@ namespace Mono.WebKit
 						Debug.WriteLine (data.args[i]);
 					Debug.Unindent ();
 				}
-			}			
+			}
 		}
 
 		[Conditional("DEBUG")]
@@ -274,7 +274,7 @@ namespace Mono.WebKit
 		{
 			Debug.Unindent ();
 		}
-		
+
 		[Conditional("TRACE")]
 		internal static void TraceWriteLine (string format, params object[] arg)
 		{
@@ -286,6 +286,6 @@ namespace Mono.WebKit
 		{
 			Debug.WriteLine (message);
 		}
-		
+
 	}
 }
